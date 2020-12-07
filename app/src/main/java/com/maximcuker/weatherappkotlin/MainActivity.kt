@@ -2,6 +2,7 @@ package com.maximcuker.weatherappkotlin
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -34,6 +35,8 @@ class MainActivity : AppCompatActivity() {
 
     //we need to require location
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
+
+    private var mProgressDialog: Dialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -92,6 +95,7 @@ class MainActivity : AppCompatActivity() {
             val service: WeatherService = retrofit.create<WeatherService>(WeatherService::class.java)
             val listCall: Call<WeatherResponse> = service.getWeather(
                 latitude, longitude, Constants.METRIC_UNIT,Constants.APP_ID)
+            showCustomProgressDialog()
 
             listCall.enqueue(object : Callback<WeatherResponse> {
                 override fun onResponse(
@@ -99,6 +103,7 @@ class MainActivity : AppCompatActivity() {
                     response: Response<WeatherResponse>
                 ) {
                     if (response.isSuccessful) {
+                        hideProgressDialog()
                         val weatherList: WeatherResponse? = response.body()
                         Log.i("Response Result","$weatherList")
                     } else {
@@ -112,7 +117,8 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
-                    Log.e("Errorrrrrr", t.message.toString())
+                    Log.e("Error", t.message.toString())
+                    hideProgressDialog()
                 }
             })
 
@@ -176,4 +182,17 @@ class MainActivity : AppCompatActivity() {
             getLocationWeatherDetails(latitude,longitude)
         }
     }
+
+    private fun showCustomProgressDialog() {
+        mProgressDialog = Dialog(this)
+        mProgressDialog?.setContentView(R.layout.dialog_custom_progress)
+        mProgressDialog?.show()
+    }
+
+    private fun hideProgressDialog() {
+        if (mProgressDialog != null) {
+            mProgressDialog?.dismiss()
+        }
+    }
+
 }

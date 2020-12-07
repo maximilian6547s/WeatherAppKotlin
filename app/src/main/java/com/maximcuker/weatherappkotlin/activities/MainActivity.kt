@@ -14,6 +14,8 @@ import android.os.Bundle
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.google.android.gms.location.*
@@ -204,12 +206,29 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_refresh -> {
+                requestLocationData()
+                true
+            }
+            else ->
+                super.onOptionsItemSelected(item)
+        }
+    }
+
     private fun setupUI(weatherList: WeatherResponse?) {
         for (i in weatherList?.weather?.indices!!) {
             Log.i("Weather Name", weatherList?.weather.toString())
             tv_main.text = weatherList.weather[i].main
             tv_main_description.text = weatherList.weather[i].description
-            tv_temp.text = weatherList.main.temp.toString() + getUnit(application.resources.configuration.locales.toString())
+            tv_temp.text =
+                weatherList.main.temp.toString() + getUnit(application.resources.configuration.locales.toString())
 
             tv_humidity.text = weatherList.main.humidity.toString() + " per cent"
             tv_min.text = weatherList.main.temp_min.toString() + " min"
@@ -221,7 +240,7 @@ class MainActivity : AppCompatActivity() {
             tv_sunrise_time.text = unixTime(weatherList.sys.sunrise)
             tv_sunset_time.text = unixTime(weatherList.sys.sunset)
 
-            when(weatherList.weather[i].icon) {
+            when (weatherList.weather[i].icon) {
                 "01d" -> iv_main.setImageResource(R.drawable.sunny)
                 "02d" -> iv_main.setImageResource(R.drawable.cloud)
                 "03d" -> iv_main.setImageResource(R.drawable.cloud)

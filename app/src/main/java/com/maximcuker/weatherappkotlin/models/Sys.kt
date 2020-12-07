@@ -1,4 +1,4 @@
-package com.maximcuker.weatherappkotlin.Models
+package com.maximcuker.weatherappkotlin.models
 
 import java.io.Serializable
 

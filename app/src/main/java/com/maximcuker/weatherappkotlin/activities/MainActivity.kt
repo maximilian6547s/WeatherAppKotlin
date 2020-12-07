@@ -1,4 +1,4 @@
-package com.maximcuker.weatherappkotlin
+package com.maximcuker.weatherappkotlin.activities
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -22,8 +22,11 @@ import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
+import com.maximcuker.weatherappkotlin.Constants
+import com.maximcuker.weatherappkotlin.R
 import com.maximcuker.weatherappkotlin.models.WeatherResponse
 import com.maximcuker.weatherappkotlin.network.WeatherService
+import kotlinx.android.synthetic.main.activity_main.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -94,7 +97,8 @@ class MainActivity : AppCompatActivity() {
                 .addConverterFactory(GsonConverterFactory.create()).build()
             val service: WeatherService = retrofit.create<WeatherService>(WeatherService::class.java)
             val listCall: Call<WeatherResponse> = service.getWeather(
-                latitude, longitude, Constants.METRIC_UNIT,Constants.APP_ID)
+                latitude, longitude, Constants.METRIC_UNIT, Constants.APP_ID
+            )
             showCustomProgressDialog()
 
             listCall.enqueue(object : Callback<WeatherResponse> {
@@ -103,8 +107,10 @@ class MainActivity : AppCompatActivity() {
                     response: Response<WeatherResponse>
                 ) {
                     if (response.isSuccessful) {
+
                         hideProgressDialog()
                         val weatherList: WeatherResponse? = response.body()
+                        setupUI(weatherList)
                         Log.i("Response Result","$weatherList")
                     } else {
                         val rc = response.code()
@@ -195,4 +201,22 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupUI(weatherList: WeatherResponse?) {
+        for (i in weatherList?.weather?.indices!!) {
+            Log.i("Weather Name", weatherList?.weather.toString())
+            tv_main.text = weatherList.weather[i].main
+            tv_main_description.text = weatherList.weather[i].description
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                tv_temp.text = weatherList.main.temp.toString() + getUnit(application.resources.configuration.locales.toString())
+            }
+        }
+    }
+
+    private fun getUnit(value: String): String? {
+        var rValue = "°C"
+        if ("US" == value || "LR" == value || "MM" == value) {
+            rValue = "°F"
+        }
+        return rValue
+    }
 }
